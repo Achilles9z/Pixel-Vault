@@ -1,4 +1,10 @@
 # Pixel Vault 🖼️📦
+<img width="818" height="752" alt="Screenshot 1" src="https://github.com/user-attachments/assets/70fa79d0-70c0-4e20-bf88-db67330a5ad2" />
+
+<img width="863" height="748" alt="Screenshot 2" src="https://github.com/user-attachments/assets/875c4920-dfa8-4005-bc0d-b195dfb15b90" />
+
+
+
 
 I built this because I wanted to hide files inside images without messing up how the image looks. Most steganography tools tweak pixels and you can see the noise. Mine doesn't.
 
