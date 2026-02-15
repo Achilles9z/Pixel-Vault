@@ -14,6 +14,77 @@
         .btn-red { background: var(--red); transition: transform 0.1s; }
         .btn-blue { background: var(--blue); color: black; transition: transform 0.1s; }
         button:active { transform: scale(0.96); }
+        
+        /* MOBILE FIX - Force visibility for all text */
+        @media (max-width: 768px) {
+            /* File input text */
+            input[type="file"] {
+                color: #ffffff !important;
+                background-color: #000000 !important;
+                border: 1px solid #333;
+            }
+            
+            /* File input placeholder text */
+            input[type="file"]::file-selector-button {
+                color: #ffffff;
+                background: #ff003c;
+                border: none;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-weight: bold;
+                margin-right: 10px;
+                cursor: pointer;
+            }
+            
+            /* Status messages */
+            .upload-status, 
+            .file-status,
+            #img-status,
+            #file-status {
+                color: #00f0ff !important;
+                background-color: #111;
+                padding: 8px 12px;
+                border-radius: 6px;
+                margin-top: 8px;
+                font-size: 12px;
+                word-break: break-all;
+                border-left: 3px solid #ff003c;
+                display: block !important;
+            }
+            
+            /* The dashed border area in decode panel */
+            .border-dashed {
+                border-color: #ff003c !important;
+                background-color: #111;
+            }
+            
+            /* All text inside decode panel */
+            #decode-panel * {
+                color: #ffffff;
+            }
+            
+            /* Force all text to be visible */
+            body, p, label, div, span, h1, h2, h3, button {
+                color: #ffffff;
+            }
+            
+            /* Exception for gray text that's supposed to be dim */
+            .text-gray-400, 
+            .text-gray-500 {
+                color: #9ca3af !important;
+            }
+            
+            /* Make sure cyber card has dark background */
+            .cyber-card {
+                background: #111 !important;
+                border: 1px solid #333;
+            }
+            
+            /* Fix for any white text on light background */
+            .bg-black, .bg-gray-900, [class*="bg-"] {
+                color: #ffffff;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-center p-6">
@@ -36,10 +107,12 @@
             <div>
                 <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">1. Pick a Photo</label>
                 <input type="file" id="img-input" accept="image/*" class="w-full bg-black border border-gray-800 p-3 rounded-lg text-xs file:hidden cursor-pointer hover:border-gray-600">
+                <div id="img-status" class="upload-status text-xs text-[#00f0ff] mt-2 font-mono hidden"></div>
             </div>
             <div>
                 <label class="text-xs font-bold text-gray-400 uppercase mb-2 block">2. File to Hide</label>
                 <input type="file" id="file-input" class="w-full bg-black border border-gray-800 p-3 rounded-lg text-xs file:hidden cursor-pointer hover:border-gray-600">
+                <div id="file-status" class="upload-status text-xs text-[#00f0ff] mt-2 font-mono hidden"></div>
             </div>
             <button onclick="handleEncode()" id="encode-btn" class="btn-red w-full py-4 rounded-xl font-black uppercase text-sm tracking-wider">Download Hidden Image</button>
         </div>
@@ -50,6 +123,7 @@
                 <div class="border-2 border-dashed border-gray-800 p-10 rounded-2xl">
                     <input type="file" id="decode-input" accept="image/*" class="text-xs text-gray-500">
                 </div>
+                <div id="decode-status" class="upload-status text-xs text-[#00f0ff] mt-2 font-mono hidden"></div>
             </div>
             <button onclick="handleDecode()" id="decode-btn" class="btn-blue w-full py-4 rounded-xl font-black uppercase text-sm tracking-wider">Extract Hidden File</button>
         </div>
@@ -58,6 +132,37 @@
 
     <script>
         const MARKER = "---PV-VAULT---";
+
+        // File name display for mobile
+        document.getElementById('img-input').addEventListener('change', function(e) {
+            const statusDiv = document.getElementById('img-status');
+            if(e.target.files[0]) {
+                statusDiv.innerHTML = '✅ <span class="text-white">' + e.target.files[0].name + '</span>';
+                statusDiv.classList.remove('hidden');
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('file-input').addEventListener('change', function(e) {
+            const statusDiv = document.getElementById('file-status');
+            if(e.target.files[0]) {
+                statusDiv.innerHTML = '📦 <span class="text-white">' + e.target.files[0].name + '</span>';
+                statusDiv.classList.remove('hidden');
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('decode-input').addEventListener('change', function(e) {
+            const statusDiv = document.getElementById('decode-status');
+            if(e.target.files[0]) {
+                statusDiv.innerHTML = '🔓 <span class="text-white">' + e.target.files[0].name + '</span>';
+                statusDiv.classList.remove('hidden');
+            } else {
+                statusDiv.classList.add('hidden');
+            }
+        });
 
         function switchTab(tab) {
             const isEncode = tab === 'encode';
@@ -81,7 +186,10 @@
             const imgFile = document.getElementById('img-input').files[0];
             const secretFile = document.getElementById('file-input').files[0];
             
-            if (!imgFile || !secretFile) return alert("Please select both files.");
+            if (!imgFile || !secretFile) {
+                alert("Please select both files.");
+                return;
+            }
 
             btn.innerText = "PROCESSING...";
             
@@ -106,7 +214,10 @@
         async function handleDecode() {
             const btn = document.getElementById('decode-btn');
             const file = document.getElementById('decode-input').files[0];
-            if (!file) return alert("Select a photo first.");
+            if (!file) {
+                alert("Select a photo first.");
+                return;
+            }
 
             btn.innerText = "EXTRACTING...";
             
@@ -118,7 +229,8 @@
             if (parts.length < 3) {
                 btn.innerText = "ERROR: NO DATA";
                 setTimeout(() => btn.innerText = "Extract Hidden File", 2000);
-                return alert("No hidden file found in this image.");
+                alert("No hidden file found in this image.");
+                return;
             }
 
             const fileName = parts[1];
@@ -126,8 +238,19 @@
             let count = 0, secondIdx = -1;
             for(let i=0; i<uint8.length; i++) {
                 let match = true;
-                for(let j=0; j<markerEncoded.length; j++) if(uint8[i+j] !== markerEncoded[j]) { match=false; break; }
-                if(match) { count++; if(count===2) { secondIdx=i; break; } }
+                for(let j=0; j<markerEncoded.length; j++) {
+                    if(uint8[i+j] !== markerEncoded[j]) { 
+                        match=false; 
+                        break; 
+                    }
+                }
+                if(match) { 
+                    count++; 
+                    if(count===2) { 
+                        secondIdx=i; 
+                        break; 
+                    }
+                }
             }
 
             const payload = uint8.slice(secondIdx + markerEncoded.length);
